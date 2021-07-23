@@ -4,3 +4,4 @@ pub mod clear_chan;
 pub mod goulag;
 pub mod nogoulag;
 pub mod spit_on;
+pub mod doomlag;

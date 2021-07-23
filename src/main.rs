@@ -1,6 +1,7 @@
 mod commands;
 mod illegal_message;
 pub mod utils;
+pub mod fabi_error;
 
 use std::{
     collections::HashSet,
@@ -29,6 +30,7 @@ use commands::{
     goulag::*,
     nogoulag::*,
     spit_on::*,
+    doomlag::*,
 };
 
 use illegal_message::illegal_message;
@@ -53,7 +55,8 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(server_info, give_me_back_my_role, clear_chan, goulag, nogoulag, spit_on)]
+#[commands(server_info, give_me_back_my_role, clear_chan, goulag, nogoulag,
+    spit_on, doomlag)]
 struct General;
 
 #[tokio::main]

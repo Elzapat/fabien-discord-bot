@@ -8,56 +8,28 @@ use serenity::{
 };
 
 use crate::utils::*;
+use crate::fabi_error::FabiError;
 
 #[command]
 pub async fn nogoulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     // Get the guild
-    let guild = match msg.guild_id {
-        Some(id) => match id.to_guild_cached(&ctx).await {
-            Some(g) => g,
-            None => {
-                msg.channel_id.say(&ctx.http, "Message not sent in a guild").await?;
-                return Ok(());
-            }
-        }
-        None => {
-            msg.channel_id.say(&ctx.http, "Message not send in a guild".to_string()).await?;
-            return Ok(());
-        },
-    };
+    let guild_id = msg.guild_id.ok_or(FabiError::NotInAGuild)?;
+    let guild = guild_id.to_guild_cached(&ctx).await.ok_or(FabiError::NotInAGuild)?;
 
     // Get the sender member
-    let sender = match get_message_member(ctx, msg).await {
-        Ok(m) => m,
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, &format!("Erreur : {}", e)).await?;
-            return Ok(());
-        },
-    };
+    let sender = guild.member(ctx, msg.author.id).await?;
 
     // Get the target of the command
-    let mut target = match args.single::<UserId>() {
-        Ok(user_id) => match guild.member(&ctx.http, user_id).await {
-            Ok(m) => m,
-            Err(e) => {
-                msg.channel_id.say(&ctx.http, format!("Cible introuvable ({})", e)).await?;
-                return Ok(());
-            },
-        },
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, format!("Usage : ?nogoulag @utilisateur, role ({})", e)).await?;
-            return Ok(());
-        },
-    };
+    let target_id = args
+        .single::<UserId>()
+        .map_err(|_| FabiError::InvalidArgument)?;
+    let mut target = guild_id
+        .member(&ctx.http, target_id)
+        .await
+        .map_err(|_| FabiError::MissingMember)?;
 
     // Get the wanted role for the target
-    let wanted_role = match args.single::<String>() {
-        Ok(r) => r,
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, format!("Usage : ?nogoulag @utilisateur, role ({})", e)).await?;
-            return Ok(());
-        },
-    };
+    let wanted_role = args.single::<String>()?;
 
     // Check if the sender has the required permissions
     if let Ok(perms) = sender.permissions(&ctx).await {
@@ -82,10 +54,7 @@ pub async fn nogoulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
         return Ok(());
     }
 
-    if let Err(e) = give_only_role(ctx, &mut target, &target_role.unwrap()).await {
-        msg.channel_id.say(&ctx.http, format!("Erreur : {}", e)).await?;
-        return Ok(());
-    }
+    give_only_role(ctx, &mut target, &target_role.unwrap()).await?;
 
     msg.channel_id
         .say(&ctx.http, format!("{} a été libéré et est maintenant un {}", target, wanted_role))

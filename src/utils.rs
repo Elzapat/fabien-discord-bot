@@ -1,19 +1,8 @@
 use serenity::{
     prelude::*,
-    model:: prelude::*,
+    model::prelude::*,
+    // framework::standard::CommandResult,
 };
-
-pub async fn get_message_member(ctx: &Context, msg: &Message) -> Result<Member, String> {
-    let guild_id = match msg.guild_id {
-        Some(id) => id,
-        None => return Err("Message not sent in a guild".to_string()),
-    };
-
-    match guild_id.member(&ctx.http, msg.author.id).await {
-        Ok(m) => Ok(m),
-        Err(_) => Err("Error getting the member".to_string()),
-    }
-}
 
 pub async fn get_role(ctx: &Context, guild_id: GuildId, role: &str) -> Result<Role, String> {
     let guild = match guild_id.to_guild_cached(&ctx).await {

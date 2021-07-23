@@ -8,60 +8,37 @@ use serenity::{
 };
 
 use crate::utils::*;
+use crate::fabi_error::FabiError;
 
 #[command]
 pub async fn goulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    // const USAGE: &str = "Usage: ?goulag @personne_pas_gentille";
     // Get the ID of the guild
-    let guild_id = match msg.guild_id {
-        Some(id) => id,
-        None => {
-            msg.channel_id.say(&ctx.http, "Message not send in a guild".to_string()).await?;
-            return Ok(());
-        },
-    };
-
+    let guild_id = msg.guild_id.ok_or(FabiError::NotInAGuild)?;
     // Get the sender member
-    let sender = match get_message_member(ctx, msg).await {
-        Ok(m) => m,
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, &format!("Erreur : {}", e)).await?;
-            return Ok(());
-        },
-    };
+    let sender = guild_id.member(&ctx.http, msg.author.id).await?;
 
     // Getting the target user of the command
-    let mut target = match args.single::<UserId>() {
-        Ok(user_id) => match guild_id.member(&ctx.http, user_id).await {
-            Ok(m) => m,
-            Err(e) => {
-                msg.channel_id.say(&ctx.http, format!("Cible introuvable ({})", e)).await?;
-                return Ok(());
-            },
-        },
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, format!("Usage : ?goulag @personne_pas_gentille ({})", e)).await?;
-            return Ok(());
-        },
-    };
+    let target_id = args
+        .single::<UserId>()
+        .map_err(|_| FabiError::InvalidArgument)?;
+    let mut target = guild_id
+        .member(&ctx.http, target_id)
+        .await
+        .map_err(|_| FabiError::MissingMember)?;
 
     // Get the gulag role
-    let gulag_role = match get_role(ctx, guild_id, "Fabien du goulag").await {
-        Ok(r) => r,
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, format!("Erreur : {}", e)).await?;
-            return Ok(());
-        },
-    };
+    let gulag_role = get_role(ctx, guild_id, "Fabien du goulag").await?;
 
     // Check if the sender is in in the gulag
     if has_role(&ctx, &sender, &gulag_role).await {
-        msg.channel_id.say(&ctx.http, "Bah non en fait".to_string()).await?;
+        msg.channel_id.say(&ctx.http, "Bah non en fait").await?;
         return Ok(());
     }
 
     // Check if the target is already in the gulag
     if has_role(&ctx, &target, &gulag_role).await {
-        msg.channel_id.say(&ctx.http, "La cible est déjà au Goulag !".to_string()).await?;
+        msg.channel_id.say(&ctx.http, "La cible est déjà au Goulag !").await?;
         return Ok(())
     }
 
@@ -74,12 +51,11 @@ pub async fn goulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
     }
 
     // Remove every role and give the gulag role to the target
-    if let Err(e) = give_only_role(ctx, &mut target, &gulag_role).await {
-        msg.channel_id.say(&ctx.http, format!("Erreur : {}", e)).await?;
-        return Ok(());
-    }
+    give_only_role(ctx, &mut target, &gulag_role).await?;
 
-    msg.channel_id.say(&ctx.http, format!("{} a bien été emmené au Goulag", target)).await?;
+    msg.channel_id
+        .say(&ctx.http, format!("{} a bien été emmené au Goulag", target))
+        .await?;
 
     Ok(())
 }

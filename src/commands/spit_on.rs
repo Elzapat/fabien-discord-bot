@@ -8,47 +8,24 @@ use serenity::{
 };
 
 use crate::utils::*;
+use crate::fabi_error::FabiError;
 
 #[command]
 pub async fn spit_on(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     // Get the ID of the guild
-    let guild_id = match msg.guild_id {
-        Some(id) => id,
-        None => {
-            msg.channel_id.say(&ctx.http, "Message not send in a guild".to_string()).await?;
-            return Ok(());
-        },
-    };
+    let guild_id = msg.guild_id.ok_or(FabiError::NotInAGuild)?;
 
-    let sender = match get_message_member(ctx, msg).await {
-        Ok(m) => m,
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, &format!("Erreur : {}", e)).await?;
-            return Ok(());
-        },
-    };
+    let sender = guild_id.member(ctx, msg.author.id).await?;
 
-    let target = match args.single::<UserId>() {
-        Ok(user) => match guild_id.member(&ctx.http, user).await {
-            Ok(m) => m,
-            Err(e) => {
-                msg.channel_id.say(&ctx.http, format!("Cible introuvable ({})", e)).await?;
-                return Ok(());
-            },
-        },
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, format!("Usage : ?spiton @personne_pas_gentille ({})", e)).await?;
-            return Ok(());
-        },
-    };
+    let target_id = args
+        .single::<UserId>()
+        .map_err(|_| FabiError::InvalidArgument)?;
+    let target = guild_id
+        .member(&ctx.http, target_id)
+        .await
+        .map_err(|_| FabiError::MissingMember)?;
 
-    let goulag_role = match get_role(ctx, guild_id, "Fabien du goulag").await {
-        Ok(r) => r,
-        Err(e) => {
-            msg.channel_id.say(&ctx.http, format!("Erreur : {}", e)).await?;
-            return Ok(())
-        },
-    };
+    let goulag_role = get_role(ctx, guild_id, "Fabien du goulag").await?;
 
     if has_role(ctx, &sender, &goulag_role).await {
         msg.channel_id.say(&ctx.http, "Salo, t'es au Goulag...").await?;
