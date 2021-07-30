@@ -11,6 +11,8 @@ use crate::utils::*;
 use crate::fabi_error::FabiError;
 
 #[command]
+#[only_in(guilds)]
+#[description = "Aled j'ai besoin de mon role rend le moi (ne marche pas si vous êtes pas Elzapat)"]
 pub async fn give_me_back_my_role(ctx: &Context, msg: &Message) -> CommandResult {
     if msg.author.id != 86385760969699328 {
         msg.channel_id.say(&ctx.http, "Non.").await?;

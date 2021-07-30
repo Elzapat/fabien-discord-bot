@@ -8,6 +8,8 @@ use serenity::{
 };
 
 #[command]
+#[only_in(guilds)]
+#[description = "Quelques petites infos sur le serveur"]
 pub async fn server_info(ctx: &Context, msg: &Message) -> CommandResult {
     let guild_id = match msg.guild_id {
         Some(id) => id,

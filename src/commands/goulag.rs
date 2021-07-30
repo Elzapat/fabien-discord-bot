@@ -11,6 +11,8 @@ use crate::utils::*;
 use crate::fabi_error::FabiError;
 
 #[command]
+#[only_in(guilds)]
+#[description = "Envoi d'un Fabien au Goulag"]
 pub async fn goulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     // const USAGE: &str = "Usage: ?goulag @personne_pas_gentille";
     // Get the ID of the guild

@@ -11,6 +11,8 @@ use crate::utils::*;
 use crate::fabi_error::FabiError;
 
 #[command]
+#[only_in(guilds)]
+#[description = "Permet de cracher sur un Fabien qui est au Goulag"]
 pub async fn spit_on(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     // Get the ID of the guild
     let guild_id = msg.guild_id.ok_or(FabiError::NotInAGuild)?;

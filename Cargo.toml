@@ -1,6 +1,6 @@
 [package]
-name = "goulagman_revamped"
-version = "0.1.0"
+name = "goulagman"
+version = "2.0.0"
 authors = ["Morgan Van Amerongen <mistigri.van@gmail.com>"]
 edition = "2018"
 

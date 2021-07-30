@@ -11,6 +11,8 @@ use crate::utils::*;
 use crate::fabi_error::FabiError;
 
 #[command]
+#[only_in(guilds)]
+#[description = "Faire sortir un Fabien du goulag en lui donnant le rôle demandé"]
 pub async fn nogoulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     // Get the guild
     let guild_id = msg.guild_id.ok_or(FabiError::NotInAGuild)?;

@@ -1,11 +1,17 @@
 use serenity::{
     prelude::*,
     model::prelude::*,
+    framework::standard::macros::hook,
 };
 
 use crate::utils::*;
 
-pub async fn illegal_message(ctx: &Context, msg: &Message) {
+#[hook]
+pub async fn check_illegal_message(ctx: &Context, msg: &Message) {
+    if !msg.content.to_lowercase().contains("bertrand") {
+        return;
+    }
+
     let _ = msg.react(&ctx.http, '😡').await;
 
     let guild_id = match msg.guild_id {
@@ -25,7 +31,8 @@ pub async fn illegal_message(ctx: &Context, msg: &Message) {
         }
     }
 
-    let _ = msg.channel_id 
+    msg.channel_id 
         .say(&ctx.http, format!("Le criminel {} a été emmené au Goulag !", msg.author))
-        .await;
+        .await
+        .unwrap();
 }

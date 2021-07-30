@@ -1,5 +1,5 @@
 mod commands;
-mod illegal_message;
+mod normal_messages;
 pub mod utils;
 pub mod fabi_error;
 
@@ -12,13 +12,21 @@ use serenity::{
     async_trait,
     framework::{
         StandardFramework,
-        standard::macros::group,
+        standard::{
+            macros::{ group, hook, help },
+            help_commands,
+            Args,
+            CommandResult,
+            HelpOptions,
+            CommandGroup,
+        },
     },
     http::Http,
     model::{
         event::ResumedEvent,
         gateway::Ready,
         channel::Message,
+        id::UserId,
     },
     prelude::*,
 };
@@ -33,7 +41,7 @@ use commands::{
     doomlag::*,
 };
 
-use illegal_message::illegal_message;
+use normal_messages::check_illegal_message;
 
 struct Handler;
 
@@ -47,17 +55,45 @@ impl EventHandler for Handler {
         println!("Resumed");
     }
 
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content.to_lowercase().contains("bertrand") {
-            illegal_message(&ctx, &msg).await;
-        }
+    async fn message(&self, _ctx: Context, _msg: Message) {
     }
 }
 
 #[group]
-#[commands(server_info, give_me_back_my_role, clear_chan, goulag, nogoulag,
-    spit_on, doomlag)]
-struct General;
+#[commands(goulag, nogoulag, doomlag)]
+#[description = "Commandes pour faire sortir ou rentrer des Fabiens au Goulag"]
+struct Goulag;
+
+#[group]
+#[commands(server_info, give_me_back_my_role, clear_chan)]
+#[description = "Commandes utilitaires qui ne sont pas faites pour les Fabien lambdas"]
+struct Utilitaires;
+
+#[group]
+#[commands(spit_on)]
+struct Interactions;
+
+#[help]
+#[individual_command_tip = "Pour avoir plus d'infos sur une commande, mets-la en argument de cette commande !"]
+async fn help(
+    ctx: &Context,
+    msg: &Message,
+    args: Args,
+    help_options: &'static HelpOptions,
+    groups: &[&'static CommandGroup],
+    owners: HashSet<UserId>,
+) -> CommandResult {
+    let _ = help_commands::with_embeds(ctx, msg, args, help_options, groups, owners).await;
+    Ok(())
+}
+
+#[hook]
+async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_result: CommandResult) {
+    match command_result {
+        Ok(()) => println!("Processed command {}", command_name),
+        Err(e) => println!("Command '{}' return error {:?}", command_name, e),
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -84,7 +120,12 @@ async fn main() {
                 .prefix("?")
                 .delimiters(vec![", ", ",", " ,"])
         )
-        .group(&GENERAL_GROUP);
+        .after(after)
+        .normal_message(check_illegal_message)
+        .help(&HELP)
+        .group(&INTERACTIONS_GROUP)
+        .group(&GOULAG_GROUP)
+        .group(&UTILITAIRES_GROUP);
 
     let mut client = Client::builder(&token)
         .framework(framework)

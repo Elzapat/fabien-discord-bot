@@ -8,6 +8,8 @@ use serenity::{
 };
 
 #[command]
+#[only_in(guilds)]
+#[description = "Supprimer quelques messages"]
 pub async fn clear_chan(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let n = args.single::<u64>()?;
 
