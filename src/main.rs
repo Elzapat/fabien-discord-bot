@@ -120,7 +120,6 @@ async fn main() {
         .configure(|c| c
                 .owners(owners)
                 .prefix("?")
-                .delimiters(vec![", ", ",", " ,"])
         )
         .after(after)
         .normal_message(check_illegal_message)
