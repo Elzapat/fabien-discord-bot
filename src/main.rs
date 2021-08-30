@@ -43,6 +43,8 @@ use commands::{
 
 use normal_messages::check_illegal_message;
 
+pub use fabi_error::{ FabiResult, FabiError };
+
 struct Handler;
 
 #[async_trait]

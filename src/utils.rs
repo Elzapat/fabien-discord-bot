@@ -3,6 +3,7 @@ use serenity::{
     model::prelude::*,
     // framework::standard::CommandResult,
 };
+use crate::FabiResult;
 
 pub async fn get_role(ctx: &Context, guild_id: GuildId, role: &str) -> Result<Role, String> {
     let guild = match guild_id.to_guild_cached(&ctx).await {
@@ -29,7 +30,7 @@ pub async fn give_only_role(
     ctx: &Context,
     target: &mut Member,
     role: &Role
-) -> Result<(), String> {
+) -> FabiResult {
     let roles = match target.roles(&ctx.cache).await {
         Some(r) => r,
         None => vec![],
@@ -40,13 +41,8 @@ pub async fn give_only_role(
         role_ids.push(role.id);
     }
 
-    if let Err(e) = target.remove_roles(&ctx.http, &role_ids).await {
-        return Err(e.to_string());
-    }
-
-    if let Err(e) = target.add_role(&ctx.http, role).await {
-        return Err(e.to_string());
-    }
+    target.remove_roles(&ctx.http, &role_ids).await?;
+    target.add_role(&ctx.http, role).await?;
 
     Ok(())
 }

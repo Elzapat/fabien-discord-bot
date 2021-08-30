@@ -10,6 +10,8 @@ pub enum FabiError {
     MissingMember,
 }
 
+pub type FabiResult<T = ()> = Result<T, Box<dyn Error + Send + Sync>>;
+
 // pub type FabiError = Box<dyn Error + Send + Sync>;
 // pub type FabiResult<T = ()> = Result<T, Box<FabiError>>;
 
@@ -17,8 +19,9 @@ impl Error for FabiError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
         // match self {
-        //     FabiError::CommandError(e) => Some(&e),
-        //     MissingData => Some("Some data was expected but was missing"),
+        //     NotInAGuild => Some(&"The message wasn't sent in a guild".to_owned()),
+        //     InvalidArgument => Some("".to_owned()),
+        //     MissingMember => Some("The target of a command is not a member of the guild".to_owned()),
         // }
     }
 }

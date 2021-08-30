@@ -9,6 +9,7 @@ use serenity::{
 
 use crate::utils::*;
 use crate::fabi_error::FabiError;
+use std::{ thread, time::Duration };
 
 #[command]
 #[only_in(guilds)]
@@ -31,10 +32,10 @@ pub async fn doomlag(ctx: &Context, msg: &Message, mut _args: Args) -> CommandRe
     // Countdown before doomlag
     msg.channel_id.say(&ctx.http, format!("everyone, le Doomlag a été initié par {}", msg.author)).await?;
     for i in (1..=3).rev() {
-        std::thread::sleep(std::time::Duration::from_secs(1));
+        thread::sleep(Duration::from_secs(1));
         msg.channel_id.say(&ctx.http, i.to_string()).await?;
     }
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    thread::sleep(Duration::from_secs(1));
     msg.channel_id.say(&ctx.http, "Que vous pourissiez tous au Goulag").await?;
     
     for member in members.iter_mut() {
