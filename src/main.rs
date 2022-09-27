@@ -23,6 +23,7 @@ use serenity::{
     },
     http::Http,
     model::{
+        gateway::GatewayIntents,
         event::ResumedEvent,
         gateway::Ready,
         channel::Message,
@@ -104,7 +105,7 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN")
         .expect("Expected a token in the environment");
 
-    let http = Http::new_with_token(&token);
+    let http = Http::new(&token);
 
     let (owners, _bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
@@ -128,7 +129,7 @@ async fn main() {
         .group(&GOULAG_GROUP)
         .group(&UTILITAIRES_GROUP);
 
-    let mut client = Client::builder(&token)
+    let mut client = Client::builder(&token, GatewayIntents::all())
         .framework(framework)
         .event_handler(Handler)
         .await

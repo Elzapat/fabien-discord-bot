@@ -30,7 +30,7 @@ pub async fn goulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
     }
 
     // Check if the sender has the required permissions
-    if let Ok(perms) = sender.permissions(&ctx).await {
+    if let Ok(perms) = sender.permissions(&ctx) {
         if !perms.manage_messages() {
             msg.channel_id.say(&ctx.http, "Vous n'avez pas les permissions pour faire ça").await?;
             return Ok(());
@@ -60,7 +60,6 @@ pub async fn goulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
     } else if let Ok(role_id) = args.single::<RoleId>() {
         let target_role = role_id
             .to_role_cached(&ctx.cache)
-            .await
             .ok_or::<Box<dyn Error + Send + Sync>>(Box::new(FabiError::InvalidArgument).into())?;
         let mut members = guild_id.members(&ctx.http, None, None).await?;
         let mut goulaged_members = Vec::new();

@@ -6,7 +6,7 @@ use serenity::{
 use crate::FabiResult;
 
 pub async fn get_role(ctx: &Context, guild_id: GuildId, role: &str) -> Result<Role, String> {
-    let guild = match guild_id.to_guild_cached(&ctx).await {
+    let guild = match guild_id.to_guild_cached(&ctx) {
         Some(g) => g,
         None => return Err("Couldn't get guild from Guild ID".to_string()),
     };
@@ -18,7 +18,7 @@ pub async fn get_role(ctx: &Context, guild_id: GuildId, role: &str) -> Result<Ro
 }
 
 pub async fn has_role(ctx: &Context, member: &Member, role: &Role) -> bool {
-    let roles = match member.roles(&ctx).await {
+    let roles = match member.roles(&ctx) {
         Some(r) => r,
         None => return false,
     };
@@ -31,7 +31,7 @@ pub async fn give_only_role(
     target: &mut Member,
     role: &Role
 ) -> FabiResult {
-    let roles = match target.roles(&ctx.cache).await {
+    let roles = match target.roles(&ctx.cache) {
         Some(r) => r,
         None => vec![],
     };

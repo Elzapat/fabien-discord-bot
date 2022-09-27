@@ -16,7 +16,7 @@ pub async fn server_info(ctx: &Context, msg: &Message) -> CommandResult {
         None => return Ok(()),
     };
 
-    let guild = match guild_id.to_guild_cached(&ctx).await {
+    let guild = match guild_id.to_guild_cached(&ctx) {
         Some(g) => g,
         None => return Ok(()),
     };

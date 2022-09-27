@@ -19,7 +19,7 @@ pub async fn doomlag(ctx: &Context, msg: &Message, mut _args: Args) -> CommandRe
     let mut sender = guild_id.member(&ctx.http, msg.author.id).await?;
 
     // Check if the sender has the required permissions
-    if let Ok(perms) = sender.permissions(&ctx).await {
+    if let Ok(perms) = sender.permissions(&ctx) {
         if !perms.manage_messages() {
             msg.channel_id.say(&ctx.http, ":slight_smile:").await?;
             return Ok(());

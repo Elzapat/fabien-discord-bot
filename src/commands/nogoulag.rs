@@ -16,7 +16,7 @@ use crate::fabi_error::FabiError;
 pub async fn nogoulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     // Get the guild
     let guild_id = msg.guild_id.ok_or(FabiError::NotInAGuild)?;
-    let guild = guild_id.to_guild_cached(&ctx).await.ok_or(FabiError::NotInAGuild)?;
+    let guild = guild_id.to_guild_cached(&ctx).ok_or(FabiError::NotInAGuild)?;
 
     // Get the sender member
     let sender = guild.member(ctx, msg.author.id).await?;
@@ -29,7 +29,7 @@ pub async fn nogoulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
     let role_id = args.single::<RoleId>()?;
 
     // Check if the sender has the required permissions
-    if let Ok(perms) = sender.permissions(&ctx).await {
+    if let Ok(perms) = sender.permissions(&ctx) {
         if !perms.manage_messages() {
             msg.channel_id.say(&ctx.http, "Vous n'avez pas les permissions pour faire ça.").await?;
             return Ok(());
@@ -40,7 +40,6 @@ pub async fn nogoulag(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
     // Doing this so the role name is not case sensitive
     let target_role = role_id
         .to_role_cached(&ctx.cache)
-        .await
         .ok_or::<Box<dyn Error + Send + Sync>>(Box::new(FabiError::InvalidArgument).into())?;
 
     give_only_role(ctx, &mut target, &target_role).await?;
